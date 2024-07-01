@@ -1,35 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
+import MovieCard, { MovieCardProps } from "./MovieCard";
+import SearchIcon from "./search.svg";
+import "./App.css";
+
+const API_URL = "http://www.omdbapi.com?apikey=b6003d8a";
+
+const App = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [movies, setMovies] = useState([]);
+
+  useEffect(() => {
+    searchMovies("Batman");
+  }, []);
+
+  const searchMovies = async (title: string) => {
+    const response = await fetch(`${API_URL}&s=${title}`);
+    const data = await response.json();
+
+    setMovies(data.Search);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="app">
+      <h1>MovieLand</h1>
 
-export default App
+      <div className="search">
+        <input
+          placeholder="Search for movies"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && searchMovies(searchTerm)}
+        />
+        <img
+          src={SearchIcon}
+          alt="search"
+          onClick={() => searchMovies(searchTerm)}
+        />
+      </div>
+
+      {movies?.length > 0 ? (
+        <div className="container">
+          {movies.map((movie: MovieCardProps) => (
+            <MovieCard key={movie.imdbID} movie={movie} />
+          ))}
+        </div>
+      ) : (
+        <div className="empty">
+          <h2>No movies found</h2>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default App;
